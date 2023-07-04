@@ -1,83 +1,209 @@
 <template>
+  <div>
+    <h1 class="ListBuku">
+      List Buku
+    </h1>
+   <div class="container">
+     <div class="row">
+       <div class="col-12">
+         <form class="d-flex" role="search">
+           <input class="form-control me-2" v-model="q" type="search" placeholder="Search" aria-label="Search">
+           <button type="button" @click="cariBuku" class="btn btn-light me-3">Pencarian</button>
+           <router-link class="button button-add" :to="`/insert-buku/`">Tambah Buku</router-link>
+         </form>
+       </div>
+     </div>
+   </div>
     <div>
-      <h1>Book Store</h1>
-      <router-link to="/books/add" class="btn btn-primary">Add Book</router-link>
-  
-      <table class="table">
-        <thead>
-        <tr>
-          <th>Id</th>
-          <th>Kode</th>
-          <th>Kode Kategori</th>
-          <th>judul</th>
-          <th>Kode Kategori</th>
-          <th>Penulis</th>
-          <th>Tahun</th>
-          <th>Harga</th>
-          <th>Cover Buku</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr v-for="book in books" :key="book.id">
-          <td>{{ book.id }}</td>
-          <td>{{ book.kode }}</td>
-          <td>{{ book.kode_kategori }}</td>
-          <td>{{ book.judul }}</td>
-          <td>{{ book.pengarang }}</td>
-          <td>{{ book.penerbit }}</td>
-          <td>{{ book.tahun }}</td>
-          <td>{{ book.harga }}</td>
-          <td>{{ book.file_cover}}</td>
-          <td>
-            <router-link :to="`/books/edit/${book.kode}`" class="btn btn-primary">Edit</router-link>
-            <button @click="deleteBook(book.kode)" class="btn btn-danger">Delete</button>
-          </td>
-        </tr>
-        </tbody>
-      </table>
-    </div>
-  </template>
-  
-  <script>
-  const api = "http://localhost/uaspweb/"
-  import axios from 'axios';
-  import { ref } from 'vue';
-  
-  export default {
-    name: 'App',
-    data() {
-      return {
-        books: ref([]),
-        
 
-      };
+    </div>
+    <div class="row justify-content-center">
+      <div class="col-lg-4 col-md-6" v-for="(data, index) in buku" :key="data.id">
+        <div class="card mb-3">
+          <div class="card-body">
+            <img :src="data.file_cover" alt="File Cover"
+                 class="img-fluid" style="width: 150px">
+            <h5 class="card-title">{{ data.judul }}</h5>
+            <p class="card-text">Diupload tanggal: {{ data.tanggal_input }}</p>
+          </div>
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item">Pengarang: {{ data.pengarang }}</li>
+            <li class="list-group-item">Kategori: {{ data.kode_kategori }}</li>
+            <li class="list-group-item">Penerbit: {{ data.penerbit }}</li>
+            <li class="list-group-item">Harga: {{ data.harga }}</li>
+          </ul>
+          <div class="card-body">
+            <router-link class="button-edit" :to="`/edit-buku/`+data.id">Edit</router-link>
+            <button class="button button-delete" role="button" @click="hapusBuku(data.id)">Delete</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</template>
+
+<script>
+import axios from 'axios';
+import {ref} from 'vue';
+
+export default {
+  data() {
+    return {
+      buku: ref([]),
+      q: ref(""),
+    };
+  },
+  mounted() {
+    this.getBukuList();
+  },
+  methods: {
+    cariBuku(){
+      axios
+          .get('https://crystalmtticstore.000webhostapp.com/crystalstore/selectBuku.php?q='+this.q)
+          .then(response => {
+            this.buku = response.data;
+          })
+          .catch(error => {
+            console.log(error);
+          });
     },
-    mounted() {
-      this.fetchBooks();
+    getBukuList() {
+      axios
+          .get('https://crystalmtticstore.000webhostapp.com/crystalstore/selectBuku.php')
+          .then(response => {
+            this.buku = response.data;
+          })
+          .catch(error => {
+            console.log(error);
+          });
     },
-    methods: {
-      fetchBooks() {
-        axios.get('http://localhost/uaspweb/selectBuku.php')
-            .then(response => {
-              this.books = response.data;
-            })
-            .catch(err => {
-              console.log('error' + err)
-            });
-      },
-      deleteBook(kode) {
-        if (confirm('Are you sure you want to delete this book?')) {
-          axios.delete(`http://localhost/uaspweb/deleteBukubyKode.php?kode=${kode}`)
-              // eslint-disable-next-line no-unused-vars
-              .then(response => {
-                console.log(response);
-                this.books = this.bo.filter(book => book.kode !== kode);
-              })
-              .catch(err => {
-                console.log('error' + err)
-              });
-        }
-      },
-    },  
-  };
-  </script>
+    hapusBuku(kode) {
+      axios
+          .delete(`https://crystalmtticstore.000webhostapp.com/crystalstore/deleteBukubyKode.php?kode=${kode}`)
+          .then(response => {
+            console.log(response.data);
+            this.getBukuList();
+          })
+          .catch(error => {
+            console.log(error);
+          });
+    },
+  }
+};
+</script>
+
+<style>
+
+.ListBuku{
+   margin-bottom: 50px;
+   margin-top: 50px;
+   text-align: center;
+ }
+.justify-content-center {
+  margin-top: 50px;
+  margin-bottom: 50px;
+  margin-left: 50px;
+  margin-right: 50px;
+}
+
+.button-edit {
+  align-items: center;
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: transparent 0 0 0 3px, rgba(18, 18, 18, .1) 0 6px 20px;
+  box-sizing: border-box;
+  color: #121212;
+  cursor: pointer;
+  display: inline-flex;
+  flex: 1 1 auto;
+  font-family: Inter, sans-serif;
+  font-size: 1.2rem;
+  font-weight: 700;
+  justify-content: center;
+  line-height: 1;
+  margin: 0;
+  outline: none;
+  padding: 1rem 1.2rem;
+  text-align: center;
+  text-decoration: none;
+  transition: box-shadow .2s, -webkit-box-shadow .2s;
+  white-space: nowrap;
+  border: 0;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  float: left; /* Menambahkan float left */
+}
+
+.button-edit:hover {
+  box-shadow: #121212 0 0 0 3px, transparent 0 0 0 0;
+}
+
+.button-delete {
+  align-items: center;
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: transparent 0 0 0 3px, rgba(18, 18, 18, .1) 0 6px 20px;
+  box-sizing: border-box;
+  color: #121212;
+  cursor: pointer;
+  display: inline-flex;
+  flex: 1 1 auto;
+  font-family: Inter, sans-serif;
+  font-size: 1.2rem;
+  font-weight: 700;
+  justify-content: center;
+  line-height: 1;
+  margin: 0;
+  outline: none;
+  padding: 1rem 1.2rem;
+  text-align: center;
+  text-decoration: none;
+  transition: box-shadow .2s, -webkit-box-shadow .2s;
+  white-space: nowrap;
+  border: 0;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  float: right; /* Menambahkan float right */
+}
+
+.button-delete:hover {
+  box-shadow: #121212 0 0 0 3px, transparent 0 0 0 0;
+}
+
+.button-add {
+  align-items: center;
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: transparent 0 0 0 3px, rgba(18, 18, 18, .1) 0 6px 20px;
+  box-sizing: border-box;
+  color: #121212;
+  cursor: pointer;
+  display: inline-flex;
+  flex: 1 1 auto;
+  font-family: Inter, sans-serif;
+  font-size: 1.2rem;
+  font-weight: 700;
+  justify-content: center;
+  line-height: 1;
+  margin: 0;
+  outline: none;
+  padding: 1rem 1.2rem;
+  text-align: center;
+  text-decoration: none;
+  transition: box-shadow .2s, -webkit-box-shadow .2s;
+  white-space: nowrap;
+  border: 0;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  float: right; /* Menambahkan float right */
+}
+
+.button-add:hover {
+  box-shadow: #121212 0 0 0 3px, transparent 0 0 0 0;
+}
+
+</style>

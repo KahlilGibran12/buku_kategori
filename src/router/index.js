@@ -1,8 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '../views/HomeView.vue'
-import Buku from '../views/BukuView.vue'
-import Kategori from '../views/KategoriView.vue'
-import Anggota from '../views/AnggotaView.vue'
+
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -10,30 +7,72 @@ const router = createRouter({
     {
       path: '/',
       name: 'home',
-      component: HomeView
+      component: () => import('../views/HomeView.vue')
+    },
+    {
+      path: '/home',
+      name: 'home',
+      component: () => import('../views/HomeView.vue')
     },
     {
       path: '/buku',
-      name: 'Buku',
-      component: Buku,
+      name: 'buku',
+      component: () => import('../views/BukuView.vue')
+    },
+    {
+      path: '/insert-buku',
+      name: 'insert',
+      component: () => import('../components/InsertBuku.vue')
     },
     {
       path: '/kategori',
-      name: 'Kategori',
-      component: Kategori,
+      name: 'kategori',
+      component: () => import('../views/KategoriView.vue')
     },
     {
       path: '/anggota',
-      name: 'Anggota',
-      component: Anggota,
+      name: 'anggota',
+      component: () => import('../views/AnggotaView.vue')
     },
     {
-      //path: '/kategori',
-      //name: 'kategori',
-      // route level code-splitting
-      // this generates a separate chunk (About.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
-      //component: () => import('../views/KategoriView.vue')
+      path: '/insert-kategori',
+      name: 'InsertKategori',
+      component: () => import('../components/InsertKategori.vue')
+    },
+    {
+      path: '/insert-anggota',
+      name: 'InsertAnggota',
+      component: () => import('../components/InsertAnggota.vue')
+    },
+    {
+      path: '/edit-anggota/:id',
+      name: 'EditAnggota',
+      component: () => import('../components/UpdateAnggota.vue')
+    },
+    {
+      path: '/edit-buku/:id',
+      name: 'EditBuku',
+      component: () => import('../components/UpdateBuku.vue')
+    },
+    {
+      path: '/edit-kategori/:id',
+      name: 'EditKategori',
+      component: () => import('../components/UpdateKategori.vue')
+    },
+    {
+      path: '/peminjaman',
+      name: 'peminjaman',
+      component: () => import('../views/PeminjamanView.vue')
+    },
+    {
+      path: '/peminjaman-master',
+      name: 'PeminjamanMaster',
+      component: () => import('../components/PeminjamanMasterView.vue')
+    },
+    {
+      path: '/detail-pinjaman/:id',
+      name: 'PeminjamanDetail',
+      component: () => import('../views/PeminjamanDetailView.vue')
     }
   ]
 })

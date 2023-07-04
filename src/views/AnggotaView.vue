@@ -1,200 +1,184 @@
 <template>
+  <div>
+    <h1 class="ListAnggota">
+      List Anggota
+    </h1>
     <div>
-      
-      <div class="search-form">
-        <input type="text" v-model="searchQuery" placeholder="Cari nama anggota">
-        <button @click="searchAnggota">Search</button>
-      </div>
-  
-      <h1><center>Daftar Anggota</center></h1>
-
-      <!-- Tampilkan seluruh anggota -->
-      <table class="table">
-        <thead>
-        <tr>
-          <th>Nomor</th>
-          <th>Nama</th>
-          <th>Jenis Kelamin</th>
-          <th>Alamat</th>
-          <th>No. HP</th>
-          <th>Tanggal Terdaftar</th>
-          <th>Aksi</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr v-for="anggota in anggotaList" :key="anggota.id">
-          <td>{{ anggota.nomor }}</td>
-          <td>{{ anggota.nama }}</td>
-          <td>{{ anggota.jenis_kelamin }}</td>
-          <td>{{ anggota.alamat }}</td>
-          <td>{{ anggota.no_hp }}</td>
-          <td>{{ anggota.tanggal_terdaftar }}</td>
-          <td>
-            <router-link :to="`/anggota/edit/${anggota.nomor}`" class="btn btn-primary">Edit</router-link>
-            <button @click="deleteAnggota(anggota.nomor)" class="btn btn-danger">Delete</button>
-          </td>
-        </tr>
-        </tbody>
-      </table>
-  
-      <!-- Form untuk menambah dan mengedit anggota -->
-  
-      <div class="card">
-        <div class="card-body">
-          <h2>{{ mode === 'tambah' ? 'Tambah Anggota' : 'Edit Anggota' }}</h2>
-          <form @submit.prevent="submitForm">
-            <div class="form-group">
-              <label for="nomor">Nomor:</label>
-              <input type="text" class="form-control" v-model="anggota.nomor" required>
-            </div>
-            <div class="form-group">
-              <label for="nama">Nama:</label>
-              <input type="text" class="form-control" v-model="anggota.nama" required>
-            </div>
-            <div class="form-group">
-              <label for="jenis_kelamin">Jenis Kelamin:</label>
-              <select class="form-control" v-model="anggota.jenis_kelamin" required>
-                <option value="Laki-laki">Laki-laki</option>
-                <option value="Perempuan">Perempuan</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label for="alamat">Alamat:</label>
-              <textarea class="form-control" v-model="anggota.alamat" required></textarea>
-            </div>
-            <div class="form-group">
-              <label for="no_hp">No. HP:</label>
-              <input type="text" class="form-control" v-model="anggota.no_hp" required>
-            </div>
-            <div class="form-group">
-              <label for="tanggal_terdaftar">Tanggal Terdaftar:</label>
-              <input type="date" class="form-control" v-model="anggota.tanggal_terdaftar" required>
-            </div>
-            <button type="submit" class="btn btn-primary" @click="submitForm">{{ mode === 'tambah' ? 
-            'Tambah' : 'Simpan' }}</button>
-            <button type="button" class="btn btn-secondary" @click="resetForm">Batal</button>
-
-          </form>
+      <router-link class="button button-add" :to="`/insert-anggota/`">Tambah Anggota</router-link>
+    </div>
+    <div class="row justify-content-center">
+      <div class="col-lg-4 col-md-6" v-for="(data, index) in anggota" :key="data.id">
+        <div class="card mb-3">
+          <div class="card-body">
+            <h5 class="card-title">{{ data.nama }}</h5>
+            <p class="card-text">no.{{ data.nomor }}</p>
+          </div>
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item">{{ data.jenis_kelamin }}</li>
+            <li class="list-group-item">No. Telepon: {{ data.no_hp }}</li>
+            <li class="list-group-item">Alamat: {{ data.alamat }}</li>
+            <li class="list-group-item">Tanggal Terdaftar: {{ data.tanggal_terdaftar }}</li>
+          </ul>
+          <div class="card-body">
+            <router-link class="button-edit" :to="`/edit-anggota/`+data.id">Edit</router-link>
+            <button class="button-delete" role="button" @click="hapusAnggota(data.id)">Delete</button>
+          </div>
         </div>
       </div>
     </div>
-  </template>
-  
-  <script>
-  import axios from 'axios';
-  
-  export default {
-    data() {
-      return {
-        anggotaList: [], // Daftar anggota
-        anggota: {
-          searchNomor: '',
-          searchedAnggota: null,
-          nomor: '',
-          nama: '',
-          jenis_kelamin: '',
-          alamat: '',
-          no_hp: '',
-          tanggal_terdaftar: ''
-        },
-        mode: 'tambah', // Mode form: tambah atau edit
-        searchNama: '',
-        searchedAnggota: null,
-      };
+  </div>
+</template>
+
+<script>
+import axios from 'axios';
+import {ref} from 'vue';
+
+export default {
+  data() {
+    return {
+      anggota: ref ([])
+    };
+  },
+  mounted() {
+    this.getAnggotaList();
+  },
+  methods: {
+    getAnggotaList() {
+      axios
+          .get('https://crystalmtticstore.000webhostapp.com/crystalstore/selectAnggota.php')
+          .then(response => {
+            this.anggota = response.data;
+          })
+          .catch(error => {
+            console.log(error);
+          });
     },
-    mounted() {
-      // Ambil seluruh anggota saat komponen di-load
-      this.getAnggotaList();
-      this.search();
-    },
-    methods: {
-        search() {
-          const nama = this.searchNama;
-          axios.get(`http://localhost/uaspweb/selectAnggota.php=${nama}`)
-              .then(response => {
-                this.searchedAnggota = response.data;
-              })
-              .catch(error => {
-                console.error(error);
-                this.searchedAnggota = null;
-              });
-        },
-      // Ambil seluruh anggota dari backend API
-      getAnggotaList() {
-        axios.get('http://localhost/uaspweb/selectAnggota.php')
-            .then(response => {
-              this.anggotaList = response.data;
-            })
-            .catch(error => {
-              console.log(error);
-            });
-      },
-      // Reset form
-      resetForm() {
-        this.anggota = {
-          nomor: '',
-          nama: '',
-          jenis_kelamin: '',
-          alamat: '',
-          no_hp: '',
-          tanggal_terdaftar: ''
-        };
-        this.mode = 'tambah';
-      },
-      // Menambah atau mengedit anggota
-      tambahForm() {
-        if (this.mode === 'tambah') {
-          axios.post('http://localhost/uaspweb/insertAnggota.php', this.anggota)
-              .then(response => {
-                console.log(response.data);
-                // Reset form dan ambil seluruh anggota setelah sukses menambahkan anggota
-                this.tambahForm();
-                this.getAnggotaList();
-              })
-              .catch(error => {
-                console.log(error);
-              });
-        } else {
-          axios.put('http://localhost/uaspweb/updateAnggotabynomor.php' + this.anggota.nomor, this.anggota)
-              .then(response => {
-                console.log(response.data);
-                // Reset form dan ambil seluruh anggota setelah sukses mengedit anggota
-                this.resetForm();
-                this.getAnggotaList();
-              })
-              .catch(error => {
-                console.log(error);
-              });
-        }
-      },
-      // Menghapus anggota berdasarkan nomor
-      hapusAnggota(nomor) {
-        axios.delete(`http://localhost/uaspweb/deleteAnggotabynomor.php/${nomor}`)
-            .then(response => {
-              console.log(response.data);
-              // Ambil seluruh anggota setelah sukses menghapus anggota
-              this.getAnggotaList();
-            })
-            .catch(error => {
-              console.log(error);
-            });
-      },
-      // Mengisi form dengan data anggota yang akan di-edit
-      editAnggota(anggota) {
-        this.anggota = { ...anggota };
-        this.mode = 'edit';
-      }
+    hapusAnggota(nomor) {
+      axios
+          .delete(`https://crystalmtticstore.000webhostapp.com/crystalstore/deleteAnggotabynomor.php?nomor=${nomor}`)
+          .then(response => {
+            console.log(response.data);
+            this.getAnggotaList();
+          })
+          .catch(error => {
+            console.log(error);
+          });
     }
-  };
-  </script>
-  
-  <style scoped>
-  /* Styling sesuai kebutuhan Anda */
-  .search-from{
-  width: 300px;
-  vertical-align: middle;
-  white-space: nowrap;
-  position: right;
+  }
+};
+</script>
+
+<style>
+.ListAnggota {
+  margin-bottom: 50px;
+  margin-top: 50px;
+  text-align: center;
 }
 
-  </style>
+.justify-content-center {
+  margin-top: 50px;
+  margin-bottom: 50px;
+  margin-left: 50px;
+  margin-right: 50px;
+}
+
+.button-edit {
+  align-items: center;
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: transparent 0 0 0 3px, rgba(18, 18, 18, .1) 0 6px 20px;
+  box-sizing: border-box;
+  color: #121212;
+  cursor: pointer;
+  display: inline-flex;
+  flex: 1 1 auto;
+  font-family: Inter, sans-serif;
+  font-size: 1.2rem;
+  font-weight: 700;
+  justify-content: center;
+  line-height: 1;
+  margin: 0;
+  outline: none;
+  padding: 1rem 1.2rem;
+  text-align: center;
+  text-decoration: none;
+  transition: box-shadow .2s, -webkit-box-shadow .2s;
+  white-space: nowrap;
+  border: 0;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  float: left; /* Menambahkan float left */
+}
+
+.button-edit:hover {
+  box-shadow: #121212 0 0 0 3px, transparent 0 0 0 0;
+}
+
+.button-delete {
+  align-items: center;
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: transparent 0 0 0 3px, rgba(18, 18, 18, .1) 0 6px 20px;
+  box-sizing: border-box;
+  color: #121212;
+  cursor: pointer;
+  display: inline-flex;
+  flex: 1 1 auto;
+  font-family: Inter, sans-serif;
+  font-size: 1.2rem;
+  font-weight: 700;
+  justify-content: center;
+  line-height: 1;
+  margin: 0;
+  outline: none;
+  padding: 1rem 1.2rem;
+  text-align: center;
+  text-decoration: none;
+  transition: box-shadow .2s, -webkit-box-shadow .2s;
+  white-space: nowrap;
+  border: 0;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  float: right; /* Menambahkan float right */
+}
+
+.button-delete:hover {
+  box-shadow: #121212 0 0 0 3px, transparent 0 0 0 0;
+}
+
+.button-add {
+  align-items: center;
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: transparent 0 0 0 3px, rgba(18, 18, 18, .1) 0 6px 20px;
+  box-sizing: border-box;
+  color: #121212;
+  cursor: pointer;
+  display: inline-flex;
+  flex: 1 1 auto;
+  font-family: Inter, sans-serif;
+  font-size: 1.2rem;
+  font-weight: 700;
+  justify-content: center;
+  line-height: 1;
+  margin: 0;
+  outline: none;
+  padding: 1rem 1.2rem;
+  text-align: center;
+  text-decoration: none;
+  transition: box-shadow .2s, -webkit-box-shadow .2s;
+  white-space: nowrap;
+  border: 0;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  float: right; /* Menambahkan float right */
+}
+
+.button-add:hover {
+  box-shadow: #121212 0 0 0 3px, transparent 0 0 0 0;
+}
+
+</style>
